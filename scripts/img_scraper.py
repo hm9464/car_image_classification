@@ -100,7 +100,7 @@ def search_and_download(search_term:str,driver_path:str,target_path='./images',n
 vehicles = pd.read_csv('vehicles.csv')
 
 vehicles = vehicles[['make', 'model', 'year']].drop_duplicates()
-vehicles = vehicles[vehicles['year']>1999]
+vehicles = vehicles[vehicles['year']==2020]
 vehicles.shape
 
 vehicles['query'] = vehicles['make'] + " " + vehicles['model'] + " " + vehicles['year'].astype(str)
@@ -118,5 +118,23 @@ chrome_options.headless = True
 DRIVER_PATH = "chromedriver.exe"
 wd = webdriver.Chrome(executable_path=DRIVER_PATH,  chrome_options=chrome_options)
 
-for term in vehicles['query']:
-    search_and_download(search_term=term,driver_path="chromedriver.exe",target_path='../scraped_images',number_images=30)
+# TOOD: handle errors with try
+def find_index():
+    path = "../scraped_images_2020"
+    files = folders = 0
+    for _, dirnames, filenames in os.walk(path):
+    #   ^ this idiom means "we won't be using this value"
+        files += len(filenames)
+        folders += len(dirnames)
+    print("{:,} files, {:,} folders".format(files, folders))
+    
+    return folders
+
+folders = find_index()
+while True:
+    try:
+        for term in vehicles['query'][folders:]:
+            search_and_download(search_term=term,driver_path="chromedriver.exe",target_path='../scraped_images_2020',number_images=100)
+    except:
+        print("No images found, trying again...")
+        folders = find_index()
